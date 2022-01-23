@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>amazon_spider.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+amazon_spider.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">scrapy</span>
+<span class="s0">from </span><span class="s1">..items </span><span class="s0">import </span><span class="s1">AmazonItem</span>
+<span class="s0">from </span><span class="s1">scrapy.loader </span><span class="s0">import </span><span class="s1">ItemLoader</span>
+<span class="s0">import </span><span class="s1">selectors</span>
+<span class="s0">import </span><span class="s1">logging</span>
+
+<span class="s0">class </span><span class="s1">AmazonSpiderSpider(scrapy.Spider):</span>
+    <span class="s1">name = </span><span class="s2">'amazon'</span>
+    <span class="s3">#start_urls = ['https://www.amazon.fr/s?k=chargeur+samsung+45w&amp;rh=p_72%3A437873031&amp;dc&amp;qid=1642861868&amp;rnid=437872031&amp;sprefix=chargeur+samsung+45%2Caps%2C72&amp;ref=sr_nr_p_72_1']</span>
+    <span class="s1">start_urls = [input(</span><span class="s2">&quot;Entre l'url a scrapper &quot;</span><span class="s1">)]</span>
+    <span class="s0">def </span><span class="s1">parse(self</span><span class="s0">, </span><span class="s1">response):</span>
+        <span class="s1">products = response.css(</span><span class="s2">'.sg-col-inner'</span><span class="s1">)</span>
+        <span class="s1">links = products.css(</span><span class="s2">'.s-no-outline ::attr(href)'</span><span class="s1">).getall()</span>
+        <span class="s0">for </span><span class="s1">link </span><span class="s0">in </span><span class="s1">links :</span>
+            <span class="s0">yield </span><span class="s1">response.follow(link</span><span class="s0">, </span><span class="s1">callback=self.parseLink)</span>
+
+    <span class="s0">def </span><span class="s1">parseLink(self</span><span class="s0">, </span><span class="s1">response):</span>
+        <span class="s1">items = AmazonItem()</span>
+        <span class="s1">items[</span><span class="s2">'product_name'</span><span class="s1">] = response.css(</span><span class="s2">'#productTitle::text'</span><span class="s1">).get()</span>
+        <span class="s1">items[</span><span class="s2">'product_link'</span><span class="s1">] = response.request.url</span>
+        <span class="s1">items[</span><span class="s2">'product_price'</span><span class="s1">] = response.css(</span><span class="s2">'.a-price-whole ::text'</span><span class="s1">).get(default = </span><span class="s2">'0'</span><span class="s1">) +</span><span class="s2">'.'</span><span class="s1">+ response.css(</span><span class="s2">'.a-price-fraction ::text'</span><span class="s1">).get(default = </span><span class="s2">'.0'</span><span class="s1">)</span>
+        <span class="s1">items[</span><span class="s2">'product_numbersOfRating'</span><span class="s1">] = response.css(</span><span class="s2">'#acrCustomerReviewText::text'</span><span class="s1">).get()</span>
+        <span class="s1">items[</span><span class="s2">'product_rating'</span><span class="s1">] = response.css(</span><span class="s2">'.a-icon-alt::text'</span><span class="s1">).get()</span>
+
+        
+        <span class="s0">yield  </span><span class="s1">items</span>
+
+</pre>
+</body>
+</html>
